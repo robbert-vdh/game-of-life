@@ -1,4 +1,5 @@
 use nalgebra::DMatrix;
+use std::cmp::{min, max};
 use std::ops::{Index, IndexMut};
 
 /// The game's grid, internally represented by matrices provided by the nalgebra crate.
@@ -20,6 +21,20 @@ impl Grid {
     /// The number of rows in the grid.
     pub fn rows(&self) -> usize {
         self.matrix.nrows()
+    }
+
+    pub fn neighbours(&self, (x, y): (usize, usize)) -> u8 {
+        let mut total = 0;
+
+        for p in max(x, 1) - 1..min(x + 2, self.rows() - 1) {
+            for q in max(y, 1) - 1..min(y + 2, self.cols() - 1) {
+                if self[(p, q)] {
+                    total += 1;
+                }
+            }
+        }
+
+        total
     }
 }
 
@@ -84,5 +99,26 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn neighbours_are_reported_correctly() {
+        let mut grid = Grid::new(10, 10);
+        grid[(4, 4)] = true;
+        grid[(5, 4)] = true;
+        grid[(6, 4)] = true;
+        grid[(4, 6)] = true;
+
+        assert_eq!(4, grid.neighbours((5, 5)));
+    }
+
+    #[test]
+    fn neighbours_are_reported_correctly_for_corners() {
+        let mut grid = Grid::new(10, 10);
+        grid[(1, 0)] = true;
+        grid[(1, 1)] = true;
+        grid[(0, 1)] = true;
+
+        assert_eq!(3, grid.neighbours((0, 0)));
     }
 }
