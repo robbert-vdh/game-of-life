@@ -42,7 +42,7 @@ impl Grid {
         }
 
         // Otherwise we would count the cell itself
-        if self[(x, y)] {
+        if self[(x, y)] && total > 0 {
             total -= 1;
         }
 
