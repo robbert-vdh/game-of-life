@@ -1,7 +1,7 @@
-//! Implemetns Conway's Game of Life for a data structure.
-
 use super::Grid;
 
+/// Implemetns Conway's Game of Life for a data structure. See
+/// [Wikipedia](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life#Rules).
 pub trait GameOfLife {
     /// Run a single cycle of the simulation.
     fn simulate(&self) -> Self;

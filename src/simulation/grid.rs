@@ -24,6 +24,7 @@ impl Grid {
         self.matrix.nrows()
     }
 
+    /// The amount of neighbours a cell has.
     pub fn neighbours(&self, (x, y): (usize, usize)) -> u8 {
         let mut total = 0;
 
@@ -35,7 +36,7 @@ impl Grid {
             }
         }
 
-        // Otherwise we count the cell itself
+        // Otherwise we would count the cell itself
         if self[(x, y)] {
             total -= 1;
         }
