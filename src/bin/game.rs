@@ -101,7 +101,7 @@ fn main() {
 /// Convert coordinates from a `Gridn` to screen coordinates, assuming OpenGL's default coordinate
 /// system.
 fn convert_coordinates(grid: &Grid, (x, y): (f32, f32)) -> [f32; 2] {
-    [x / grid.cols() as f32 * 2.0 - 1.0, y / grid.rows() as f32 * 2.0 - 1.0]
+    [x / grid.cols() as f32 * 2.0 - 1.0, y / grid.rows() as f32 * -2.0 + 1.0]
 }
 
 #[derive(Copy, Clone)]
