@@ -1,3 +1,4 @@
+extern crate game_of_life;
 #[macro_use]
 extern crate glium;
 
