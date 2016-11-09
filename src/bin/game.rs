@@ -12,8 +12,8 @@ use glium::uniforms::EmptyUniforms;
 const FRAMES_PER_CYCLE: u32 = 20;
 const GRID_HEIGHT: usize = 20;
 const GRID_WIDTH: usize = 20;
-const X_OFFSET: usize = 9;
-const Y_OFFSET: usize = 9;
+const X_OFFSET: usize = 10;
+const Y_OFFSET: usize = 2;
 
 fn main() {
     let display = WindowBuilder::new().build_glium().unwrap();
