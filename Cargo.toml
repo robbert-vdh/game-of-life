@@ -5,4 +5,3 @@ authors = ["Robbert van der Helm <robbert@zzindi.nl>"]
 
 [dependencies]
 glium = "~0.15.0"
-nalgebra = "~0.10.1"

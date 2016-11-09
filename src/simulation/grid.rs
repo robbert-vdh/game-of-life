@@ -1,35 +1,40 @@
-use nalgebra::DMatrix;
 use std::cmp::{min, max};
 use std::ops::{Index, IndexMut};
 
 /// The game's grid, internally represented by matrices provided by the nalgebra crate.
 #[derive(Clone)]
 pub struct Grid {
-    matrix: DMatrix<bool>,
+    cols: usize,
+    matrix: Vec<bool>,
+    rows: usize,
 }
 
 impl Grid {
     /// Create a new grid with the specified dimensions. All cells default to `false`.
     pub fn new(rows: usize, columns: usize) -> Grid {
-        Grid { matrix: DMatrix::from_element(rows, columns, false) }
+        Grid {
+            cols: columns,
+            matrix: vec![false; rows * columns],
+            rows: rows,
+        }
     }
 
     /// The number of columns in the grid.
     pub fn cols(&self) -> usize {
-        self.matrix.ncols()
+        self.cols
     }
 
     /// The number of rows in the grid.
     pub fn rows(&self) -> usize {
-        self.matrix.nrows()
+        self.rows
     }
 
     /// The amount of neighbours a cell has.
     pub fn neighbours(&self, (x, y): (usize, usize)) -> u8 {
         let mut total = 0;
 
-        for p in max(x, 1) - 1..min(x + 2, self.rows() - 1) {
-            for q in max(y, 1) - 1..min(y + 2, self.cols() - 1) {
+        for p in max(x, 1) - 1..min(x + 2, self.cols() - 1) {
+            for q in max(y, 1) - 1..min(y + 2, self.rows() - 1) {
                 if self[(p, q)] {
                     total += 1;
                 }
@@ -48,14 +53,14 @@ impl Grid {
 impl Index<(usize, usize)> for Grid {
     type Output = bool;
 
-    fn index(&self, index: (usize, usize)) -> &bool {
-        &self.matrix[index]
+    fn index(&self, (x, y): (usize, usize)) -> &bool {
+        &self.matrix[x + y * self.cols]
     }
 }
 
 impl IndexMut<(usize, usize)> for Grid {
-    fn index_mut(&mut self, index: (usize, usize)) -> &mut bool {
-        &mut self.matrix[index]
+    fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut bool {
+        &mut self.matrix[x + y * self.cols]
     }
 }
 
