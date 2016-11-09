@@ -3,6 +3,7 @@ use std::cmp::{min, max};
 use std::ops::{Index, IndexMut};
 
 /// The game's grid, internally represented by matrices provided by the nalgebra crate.
+#[derive(Clone)]
 pub struct Grid {
     matrix: DMatrix<bool>,
 }
