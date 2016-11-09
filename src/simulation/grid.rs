@@ -36,3 +36,53 @@ impl IndexMut<(usize, usize)> for Grid {
         &mut self.matrix[index]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bounds_are_reported_correctly() {
+        let grid = Grid::new(10, 10);
+
+        assert_eq!(10, grid.rows());
+        assert_eq!(10, grid.cols());
+
+        assert_eq!(false, grid[(9, 9)]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn horizontal_bound_should_overflow() {
+        let grid = Grid::new(10, 10);
+
+        grid[(10, 9)];
+    }
+
+    #[test]
+    #[should_panic]
+    fn vertical_bound_should_overflow() {
+        let grid = Grid::new(10, 10);
+
+        grid[(9, 10)];
+    }
+
+    #[test]
+    fn indexing_works() {
+        let mut grid = Grid::new(10, 10);
+
+        for i in 0..10 {
+            grid[(i, 0)] = true;
+        }
+
+        for x in 0..10 {
+            for y in 0..10 {
+                if y == 0 {
+                    assert_eq!(true, grid[(x, y)])
+                } else {
+                    assert_eq!(false, grid[(x, y)])
+                }
+            }
+        }
+    }
+}
