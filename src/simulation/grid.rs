@@ -35,6 +35,11 @@ impl Grid {
             }
         }
 
+        // Otherwise we count the cell itself
+        if self[(x, y)] {
+            total -= 1;
+        }
+
         total
     }
 }
@@ -105,6 +110,7 @@ mod tests {
     #[test]
     fn neighbours_are_reported_correctly() {
         let mut grid = Grid::new(10, 10);
+        grid[(5, 5)] = true;
         grid[(4, 4)] = true;
         grid[(5, 4)] = true;
         grid[(6, 4)] = true;
