@@ -2,12 +2,14 @@ extern crate game_of_life;
 #[macro_use]
 extern crate glium;
 
-use game_of_life::simulation::{GameOfLife, Grid};
 use glium::{DisplayBuild, Program, Surface, VertexBuffer};
+use glium::backend::Facade;
 use glium::glutin::ElementState::Pressed;
 use glium::glutin::{Event, WindowBuilder, VirtualKeyCode};
 use glium::index;
 use glium::uniforms::EmptyUniforms;
+
+use game_of_life::simulation::{GameOfLife, Grid};
 
 const FRAMES_PER_CYCLE: u32 = 20;
 const GRID_HEIGHT: usize = 20;
@@ -38,38 +40,7 @@ fn main() {
 
     let mut passed_frames = 0;
     loop {
-        let alive_cells = {
-            let mut triangles = Vec::new();
-
-            for x in 0..grid.cols() {
-                for y in 0..grid.rows() {
-                    if grid[(x, y)] {
-                        let x = x as f32;
-                        let y = y as f32;
-
-                        triangles.push(Vertex { v_position: convert_coordinates(&grid, (x, y)) });
-                        triangles.push(Vertex {
-                            v_position: convert_coordinates(&grid, (x + 1.0, y)),
-                        });
-                        triangles.push(Vertex {
-                            v_position: convert_coordinates(&grid, (x, y + 1.0)),
-                        });
-                        triangles.push(Vertex {
-                            v_position: convert_coordinates(&grid, (x, y + 1.0)),
-                        });
-                        triangles.push(Vertex {
-                            v_position: convert_coordinates(&grid, (x + 1.0, y + 1.0)),
-                        });
-                        triangles.push(Vertex {
-                            v_position: convert_coordinates(&grid, (x + 1.0, y)),
-                        });
-                    }
-                }
-            }
-
-            VertexBuffer::new(&display, &triangles).unwrap()
-        };
-        let alive_indices = index::NoIndices(index::PrimitiveType::TrianglesList);
+        let (alive_cells, alive_indices) = render_grid(&display, &grid);
 
         // listing the events produced by the window and waiting to be received
         for ev in display.poll_events() {
@@ -102,6 +73,35 @@ fn main() {
 /// system.
 fn convert_coordinates(grid: &Grid, (x, y): (f32, f32)) -> [f32; 2] {
     [x / grid.cols() as f32 * 2.0 - 1.0, y / grid.rows() as f32 * -2.0 + 1.0]
+}
+
+/// Prepare the grid for redering.
+fn render_grid<F: Facade>(display: &F, grid: &Grid) -> (VertexBuffer<Vertex>, index::NoIndices) {
+    let alive_cells = {
+        let mut triangles = Vec::new();
+
+        for x in 0..grid.cols() {
+            for y in 0..grid.rows() {
+                if grid[(x, y)] {
+                    let x = x as f32;
+                    let y = y as f32;
+
+                    triangles.push(Vertex { v_position: convert_coordinates(grid, (x, y)) });
+                    triangles.push(Vertex { v_position: convert_coordinates(grid, (x + 1.0, y)) });
+                    triangles.push(Vertex { v_position: convert_coordinates(grid, (x, y + 1.0)) });
+                    triangles.push(Vertex { v_position: convert_coordinates(grid, (x, y + 1.0)) });
+                    triangles.push(Vertex {
+                        v_position: convert_coordinates(grid, (x + 1.0, y + 1.0)),
+                    });
+                    triangles.push(Vertex { v_position: convert_coordinates(grid, (x + 1.0, y)) });
+                }
+            }
+        }
+
+        VertexBuffer::new(display, &triangles).unwrap()
+    };
+
+    (alive_cells, index::NoIndices(index::PrimitiveType::TrianglesList))
 }
 
 #[derive(Copy, Clone)]
