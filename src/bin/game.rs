@@ -42,7 +42,6 @@ fn main() {
     loop {
         let (alive_cells, alive_indices) = render_grid(&display, &grid);
 
-        // listing the events produced by the window and waiting to be received
         for ev in display.poll_events() {
             match ev {
                 Event::Closed |
