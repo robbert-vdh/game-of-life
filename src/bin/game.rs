@@ -7,7 +7,8 @@ use glium::backend::Facade;
 use glium::glutin::ElementState::Pressed;
 use glium::glutin::{Event, WindowBuilder, VirtualKeyCode};
 use glium::index;
-use glium::uniforms::EmptyUniforms;
+use glium::texture::Texture2d;
+use glium::uniforms::{EmptyUniforms, MagnifySamplerFilter};
 
 use game_of_life::simulation::{GameOfLife, Grid};
 
@@ -38,6 +39,13 @@ fn main() {
         Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap()
     };
 
+    let post_program = {
+        let vertex_shader_src = include_str!("../assets/vs.glsl");
+        let fragment_shader_src = include_str!("../assets/fs_post.glsl");
+
+        Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap()
+    };
+
     let mut passed_frames = 0;
     loop {
         let (alive_cells, alive_indices) = render_grid(&display, &grid);
@@ -50,12 +58,30 @@ fn main() {
             }
         }
 
+        let (width, height) = display.get_framebuffer_dimensions();
+        let texture = Texture2d::empty(&display, width, height).unwrap();
+        {
+            let mut render_target = texture.as_surface();
+            render_target.clear_color(0.9, 0.9, 0.9, 1.0);
+            render_target.draw(&alive_cells,
+                      &alive_indices,
+                      &program,
+                      &EmptyUniforms,
+                      &Default::default())
+                .unwrap();
+        }
+
+        let (post_quad, post_indices) = create_quad(&display);
+        let post_uniforms = uniform! {
+            screen_texture: texture.sampled().magnify_filter(MagnifySamplerFilter::Nearest)
+        };
+
         let mut target = display.draw();
         target.clear_color(0.9, 0.9, 0.9, 1.0);
-        target.draw(&alive_cells,
-                  &alive_indices,
-                  &program,
-                  &EmptyUniforms,
+        target.draw(&post_quad,
+                  &post_indices,
+                  &post_program,
+                  &post_uniforms,
                   &Default::default())
             .unwrap();
         target.finish().unwrap();
@@ -101,6 +127,20 @@ fn render_grid<F: Facade>(display: &F, grid: &Grid) -> (VertexBuffer<Vertex>, in
     };
 
     (alive_cells, index::NoIndices(index::PrimitiveType::TrianglesList))
+}
+
+/// Create the screen quad on which post processing will take place.
+fn create_quad<F: Facade>(display: &F) -> (VertexBuffer<Vertex>, index::NoIndices) {
+    let vbo = {
+        let quad = vec![Vertex { v_position: [-1.0, -1.0] },
+                        Vertex { v_position: [1.0, -1.0] },
+                        Vertex { v_position: [1.0, 1.0] },
+                        Vertex { v_position: [-1.0, 1.0] }];
+
+        VertexBuffer::new(display, &quad).unwrap()
+    };
+
+    (vbo, index::NoIndices(index::PrimitiveType::TriangleFan))
 }
 
 #[derive(Copy, Clone)]
