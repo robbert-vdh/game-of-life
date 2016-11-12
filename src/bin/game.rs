@@ -46,7 +46,7 @@ fn main() {
         Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap()
     };
 
-    let mut passed_frames = 0;
+    let mut frames_since_last_draw = FRAMES_PER_CYCLE;
     loop {
         let (alive_cells, alive_indices) = render_grid(&display, &grid);
 
@@ -73,7 +73,8 @@ fn main() {
 
         let (post_quad, post_indices) = create_quad(&display);
         let post_uniforms = uniform! {
-            screen_texture: texture.sampled().magnify_filter(MagnifySamplerFilter::Nearest)
+            screen_texture: texture.sampled().magnify_filter(MagnifySamplerFilter::Nearest),
+            time_remaining: (frames_since_last_draw as f32 / FRAMES_PER_CYCLE as f32).sqrt()
         };
 
         let mut target = display.draw();
@@ -86,10 +87,10 @@ fn main() {
             .unwrap();
         target.finish().unwrap();
 
-        passed_frames += 1;
-        if passed_frames > FRAMES_PER_CYCLE {
+        frames_since_last_draw -= 1;
+        if frames_since_last_draw == 0 {
             grid = grid.simulate();
-            passed_frames = 0;
+            frames_since_last_draw = FRAMES_PER_CYCLE;
         }
     }
 }
