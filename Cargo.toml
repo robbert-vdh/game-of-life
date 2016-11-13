@@ -5,3 +5,4 @@ authors = ["Robbert van der Helm <robbert@zzindi.nl>"]
 
 [dependencies]
 glium = "~0.15.0"
+time = "~0.1.35"

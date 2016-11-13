@@ -1,6 +1,7 @@
 extern crate game_of_life;
 #[macro_use]
 extern crate glium;
+extern crate time;
 
 use glium::{DisplayBuild, Program, Surface, VertexBuffer};
 use glium::backend::Facade;
@@ -9,10 +10,12 @@ use glium::glutin::{Event, WindowBuilder, VirtualKeyCode};
 use glium::index;
 use glium::texture::Texture2d;
 use glium::uniforms::{EmptyUniforms, MagnifySamplerFilter};
+use time::now;
 
 use game_of_life::simulation::{GameOfLife, Grid};
 
-const FRAMES_PER_CYCLE: u32 = 20;
+/// The amount of time a frame should take, in miliseconds
+const FRAME_TIME: i64 = 172;
 const GRID_HEIGHT: usize = 20;
 const GRID_WIDTH: usize = 20;
 const X_OFFSET: usize = 10;
@@ -46,7 +49,10 @@ fn main() {
         Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap()
     };
 
-    let mut frames_since_last_draw = FRAMES_PER_CYCLE;
+    /// The amount of time since we've updated the simulation.
+    let mut time_idle = 0;
+    let mut time_last_frame = now();
+
     loop {
         let (alive_cells, alive_indices) = render_grid(&display, &grid);
 
@@ -74,7 +80,7 @@ fn main() {
         let (post_quad, post_indices) = create_quad(&display);
         let post_uniforms = uniform! {
             screen_texture: texture.sampled().magnify_filter(MagnifySamplerFilter::Nearest),
-            time_remaining: (frames_since_last_draw as f32 / FRAMES_PER_CYCLE as f32).sqrt()
+            time_remaining: (-time_idle as f32 / FRAME_TIME as f32).min(1.0).sqrt()
         };
 
         let mut target = display.draw();
@@ -87,10 +93,15 @@ fn main() {
             .unwrap();
         target.finish().unwrap();
 
-        frames_since_last_draw -= 1;
-        if frames_since_last_draw == 0 {
+        // We'll calculate new frames after rendering, to prevent the first pattern from being
+        // skipped
+        let time_now = now();
+        time_idle += (time_now - time_last_frame).num_milliseconds();
+        time_last_frame = time_now;
+
+        while time_idle > 0 {
             grid = grid.simulate();
-            frames_since_last_draw = FRAMES_PER_CYCLE;
+            time_idle -= FRAME_TIME;
         }
     }
 }
