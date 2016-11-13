@@ -20,7 +20,7 @@ void main() {
         screen_texture,
         coordinates,
         vec2(BLUR_AMOUNT, BLUR_AMOUNT) * (1 - time_remaining) + INITIAL_BLUR,
-        coordinates * 2 - 1
+        f_position
     );
 
     color = blurred * time_remaining + texture_color * (1 - time_remaining);
